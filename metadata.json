@@ -1,0 +1,6 @@
+{
+  "name": "Predator-Prey Sim",
+  "description": "An interactive, visual simulation of the Lotka-Volterra predator-prey model featuring ODE solvers, real-time custom charts, and a physical 2D ecosystem canvas.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
