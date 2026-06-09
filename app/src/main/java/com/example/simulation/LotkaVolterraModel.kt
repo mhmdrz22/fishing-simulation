@@ -70,7 +70,7 @@ class SimulationViewModel : ViewModel() {
     val simSpeed = _simSpeed.asStateFlow()
 
     // "Analytical" (ODE math solvers) or "Ecosystem" (Spatial 2D game)
-    private val _viewMode = MutableStateFlow("Ecosystem")
+    private val _viewMode = MutableStateFlow("Analytical")
     val viewMode = _viewMode.asStateFlow()
 
     // --- Data Streams ---

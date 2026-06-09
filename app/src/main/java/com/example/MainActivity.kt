@@ -25,10 +25,12 @@ import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalConfiguration
+import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -45,16 +47,18 @@ class MainActivity : ComponentActivity() {
         enableEdgeToEdge()
         setContent {
             MyApplicationTheme {
-                Scaffold(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .testTag("main_scaffold")
-                ) { innerPadding ->
-                    MainScreen(
+                CompositionLocalProvider(LocalLayoutDirection provides LayoutDirection.Rtl) {
+                    Scaffold(
                         modifier = Modifier
                             .fillMaxSize()
-                            .padding(innerPadding)
-                    )
+                            .testTag("main_scaffold")
+                    ) { innerPadding ->
+                        MainScreen(
+                            modifier = Modifier
+                                .fillMaxSize()
+                                .padding(innerPadding)
+                        )
+                    }
                 }
             }
         }
@@ -440,9 +444,9 @@ fun ScreenHeader(
     ) {
         Column(modifier = Modifier.weight(1f)) {
             Text(
-                text = "شبیه‌ساز صید و صیاد (لوتکا-ولترا)",
+                text = "شبیه‌ساز پیوسته صید و صیاد (کوسه و ماهی)",
                 fontWeight = FontWeight.Bold,
-                fontSize = 20.sp,
+                fontSize = 18.sp,
                 color = BrandPrimary,
                 textAlign = TextAlign.Right,
                 modifier = Modifier.fillMaxWidth()
@@ -491,8 +495,8 @@ fun ViewModeSelector(
         horizontalArrangement = Arrangement.spacedBy(4.dp)
     ) {
         val modes = listOf(
-            Pair("Ecosystem", "اکوسیستم ۲ بعدی فیزیکی"),
-            Pair("Analytical", "شبیه‌سازی تحلیلی ریاضی")
+            Pair("Ecosystem", "اکوسیستم فیزیکی (گسسته)"),
+            Pair("Analytical", "شبیه‌ساز ریاضی (پیوسته)")
         )
 
         modes.forEach { (modeKey, modeTitle) ->
@@ -506,7 +510,7 @@ fun ViewModeSelector(
                     .clip(RoundedCornerShape(11.dp))
                     .background(bgCol)
                     .clickable { onModeChanged(modeKey) }
-                    .padding(vertical = 10.dp)
+                    .height(48.dp)
                     .testTag("tab_$modeKey"),
                 contentAlignment = Alignment.Center
             ) {
@@ -559,7 +563,7 @@ fun PlayControlsBar(
                         shape = RoundedCornerShape(8.dp),
                         contentPadding = PaddingValues(horizontal = 10.dp, vertical = 2.dp),
                         modifier = Modifier
-                            .height(34.dp)
+                            .height(48.dp)
                             .testTag("speed_${speed}x")
                     ) {
                         Text("${speed}x", fontWeight = FontWeight.Bold, fontSize = 12.sp)
@@ -582,7 +586,7 @@ fun PlayControlsBar(
                     shape = RoundedCornerShape(12.dp),
                     contentPadding = PaddingValues(horizontal = 16.dp, vertical = 6.dp),
                     modifier = Modifier
-                        .height(38.dp)
+                        .height(48.dp)
                         .testTag("play_pause_button")
                 ) {
                     Icon(
@@ -606,7 +610,7 @@ fun PlayControlsBar(
                     colors = ButtonDefaults.outlinedButtonColors(contentColor = OceanOnSurface),
                     contentPadding = PaddingValues(horizontal = 12.dp, vertical = 6.dp),
                     modifier = Modifier
-                        .height(38.dp)
+                        .height(48.dp)
                         .testTag("reset_button")
                 ) {
                     Icon(Icons.Filled.Refresh, contentDescription = "Reset Simulation", modifier = Modifier.size(16.dp))
@@ -882,6 +886,7 @@ fun EcosystemPlayground(
                         shape = RoundedCornerShape(8.dp),
                         modifier = Modifier
                             .weight(1f)
+                            .height(48.dp)
                             .padding(horizontal = 4.dp)
                             .testTag("inject_fish_button")
                     ) {
@@ -897,6 +902,7 @@ fun EcosystemPlayground(
                         shape = RoundedCornerShape(8.dp),
                         modifier = Modifier
                             .weight(1f)
+                            .height(48.dp)
                             .padding(horizontal = 4.dp)
                             .testTag("inject_shark_button")
                     ) {
@@ -921,89 +927,167 @@ fun AnalyticalDetailsView(
     val configuration = LocalConfiguration.current
     val isLandscape = configuration.orientation == android.content.res.Configuration.ORIENTATION_LANDSCAPE
 
-    if (isLandscape) {
-        // Landscape splits double graphs horizontally side-by-side
-        Row(
-            modifier = modifier.fillMaxSize(),
-            horizontalArrangement = Arrangement.spacedBy(16.dp)
+    Column(
+        modifier = modifier,
+        verticalArrangement = Arrangement.spacedBy(10.dp)
+    ) {
+        // Continuous Rate of Change Math Banner
+        Card(
+            colors = CardDefaults.cardColors(containerColor = OceanDarkSurface),
+            shape = RoundedCornerShape(14.dp),
+            border = BorderStroke(1.dp, ThemeOutline),
+            modifier = Modifier.fillMaxWidth()
         ) {
-            Card(
-                colors = CardDefaults.cardColors(containerColor = Color(0xFF1D1B20)),
-                shape = RoundedCornerShape(20.dp),
-                border = BorderStroke(4.dp, ThemeOutline),
-                modifier = Modifier
-                    .weight(1.2f)
-                    .fillMaxHeight()
+            Column(
+                modifier = Modifier.padding(horizontal = 12.dp, vertical = 8.dp),
+                verticalArrangement = Arrangement.spacedBy(4.dp)
             ) {
-                Box(modifier = Modifier.padding(14.dp)) {
-                    PopulationChart(
-                        history = odeHistory,
-                        peakPrey = peakPrey,
-                        peakPredator = peakPredator,
-                        modifier = Modifier.fillMaxSize(),
-                        title = "نمودار نوسان جمعیت در طول زمان (Population-Time)"
-                    )
-                }
-            }
+                Text(
+                    text = "آهنگ تغییر پیوسته جمعیت‌ها (معادلات دیفرانسیل لوتکا-ولترا):",
+                    fontWeight = FontWeight.Bold,
+                    fontSize = 11.sp,
+                    color = BrandPrimary,
+                    textAlign = TextAlign.Right,
+                    modifier = Modifier.fillMaxWidth()
+                )
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceEvenly,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    // Equation for Fish (Prey)
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(4.dp)
+                    ) {
+                        Text(
+                            text = "dX/dt = rX - aXY",
+                            fontWeight = FontWeight.Bold,
+                            fontFamily = FontFamily.Monospace,
+                            fontSize = 12.sp,
+                            color = OceanPrimary
+                        )
+                        Text(
+                            text = "(ماهی)",
+                            fontSize = 10.sp,
+                            color = OceanOnSurface.copy(alpha = 0.6f)
+                        )
+                    }
 
-            Card(
-                colors = CardDefaults.cardColors(containerColor = Color(0xFF1D1B20)),
-                shape = RoundedCornerShape(20.dp),
-                border = BorderStroke(4.dp, ThemeOutline),
-                modifier = Modifier
-                    .weight(0.8f)
-                    .fillMaxHeight()
-            ) {
-                Box(modifier = Modifier.padding(14.dp)) {
-                    PhaseSpaceChart(
-                        history = odeHistory,
-                        peakPrey = peakPrey,
-                        peakPredator = peakPredator,
-                        modifier = Modifier.fillMaxSize()
+                    Box(
+                        modifier = Modifier
+                            .width(1.dp)
+                            .height(14.dp)
+                            .background(ThemeOutline)
                     )
+
+                    // Equation for Shark (Predator)
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(4.dp)
+                    ) {
+                        Text(
+                            text = "dY/dt = -sY + bXY",
+                            fontWeight = FontWeight.Bold,
+                            fontFamily = FontFamily.Monospace,
+                            fontSize = 12.sp,
+                            color = Color(0xFFFF5252)
+                        )
+                        Text(
+                            text = "(کوسه)",
+                            fontSize = 10.sp,
+                            color = OceanOnSurface.copy(alpha = 0.6f)
+                        )
+                    }
                 }
             }
         }
-    } else {
-        // Portrait splits double graphs vertically
-        Column(
-            modifier = modifier.fillMaxSize(),
-            verticalArrangement = Arrangement.spacedBy(10.dp)
-        ) {
-            Card(
-                colors = CardDefaults.cardColors(containerColor = Color(0xFF1D1B20)),
-                shape = RoundedCornerShape(16.dp),
-                border = BorderStroke(4.dp, ThemeOutline),
-                modifier = Modifier
-                    .weight(1f)
-                    .fillMaxWidth()
+
+        // Charts container
+        if (isLandscape) {
+            // Landscape splits double graphs horizontally side-by-side
+            Row(
+                modifier = Modifier.weight(1f).fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(16.dp)
             ) {
-                Box(modifier = Modifier.padding(10.dp)) {
-                    PopulationChart(
-                        history = odeHistory,
-                        peakPrey = peakPrey,
-                        peakPredator = peakPredator,
-                        modifier = Modifier.fillMaxSize(),
-                        title = "نمودار ریاضی جمعیت‌ها نسبت به زمان"
-                    )
+                Card(
+                    colors = CardDefaults.cardColors(containerColor = Color(0xFF1D1B20)),
+                    shape = RoundedCornerShape(20.dp),
+                    border = BorderStroke(4.dp, ThemeOutline),
+                    modifier = Modifier
+                        .weight(1.2f)
+                        .fillMaxHeight()
+                ) {
+                    Box(modifier = Modifier.padding(14.dp)) {
+                        PopulationChart(
+                            history = odeHistory,
+                            peakPrey = peakPrey,
+                            peakPredator = peakPredator,
+                            modifier = Modifier.fillMaxSize(),
+                            title = "نمودار نوسان جمعیت در طول زمان (Population-Time)"
+                        )
+                    }
+                }
+
+                Card(
+                    colors = CardDefaults.cardColors(containerColor = Color(0xFF1D1B20)),
+                    shape = RoundedCornerShape(20.dp),
+                    border = BorderStroke(4.dp, ThemeOutline),
+                    modifier = Modifier
+                        .weight(0.8f)
+                        .fillMaxHeight()
+                ) {
+                    Box(modifier = Modifier.padding(14.dp)) {
+                        PhaseSpaceChart(
+                            history = odeHistory,
+                            peakPrey = peakPrey,
+                            peakPredator = peakPredator,
+                            modifier = Modifier.fillMaxSize()
+                        )
+                    }
                 }
             }
-
-            Card(
-                colors = CardDefaults.cardColors(containerColor = Color(0xFF1D1B20)),
-                shape = RoundedCornerShape(16.dp),
-                border = BorderStroke(4.dp, ThemeOutline),
-                modifier = Modifier
-                    .weight(0.9f)
-                    .fillMaxWidth()
+        } else {
+            // Portrait splits double graphs vertically
+            Column(
+                modifier = Modifier.weight(1f).fillMaxWidth(),
+                verticalArrangement = Arrangement.spacedBy(10.dp)
             ) {
-                Box(modifier = Modifier.padding(10.dp)) {
-                    PhaseSpaceChart(
-                        history = odeHistory,
-                        peakPrey = peakPrey,
-                        peakPredator = peakPredator,
-                        modifier = Modifier.fillMaxSize()
-                    )
+                Card(
+                    colors = CardDefaults.cardColors(containerColor = Color(0xFF1D1B20)),
+                    shape = RoundedCornerShape(16.dp),
+                    border = BorderStroke(4.dp, ThemeOutline),
+                    modifier = Modifier
+                        .weight(1f)
+                        .fillMaxWidth()
+                ) {
+                    Box(modifier = Modifier.padding(10.dp)) {
+                        PopulationChart(
+                            history = odeHistory,
+                            peakPrey = peakPrey,
+                            peakPredator = peakPredator,
+                            modifier = Modifier.fillMaxSize(),
+                            title = "نمودار ریاضی جمعیت‌ها نسبت به زمان"
+                        )
+                    }
+                }
+
+                Card(
+                    colors = CardDefaults.cardColors(containerColor = Color(0xFF1D1B20)),
+                    shape = RoundedCornerShape(16.dp),
+                    border = BorderStroke(4.dp, ThemeOutline),
+                    modifier = Modifier
+                        .weight(0.9f)
+                        .fillMaxWidth()
+                ) {
+                    Box(modifier = Modifier.padding(10.dp)) {
+                        PhaseSpaceChart(
+                            history = odeHistory,
+                            peakPrey = peakPrey,
+                            peakPredator = peakPredator,
+                            modifier = Modifier.fillMaxSize()
+                        )
+                    }
                 }
             }
         }
@@ -1350,11 +1434,11 @@ fun ParametersSection(
                 )
             }
 
-            // Sliders listing
+            // Sliders listing or continuous multipliers
             // 1. Prey growth rate 'r'
             ParameterSliderItem(
-                label = "نرخ تولید مثل طبیعی صید (r):",
-                subText = "سرعت تکثیر فاقد صیاد (تولید ماهی)",
+                label = "نرخ رشد طبیعی ماهی‌ها (r) - صید:",
+                subText = "سرعت رشد ذاتی صید در صورت نبودن کوسه",
                 value = r,
                 range = 0.1f..1.5f,
                 color = OceanPrimary,
@@ -1364,8 +1448,8 @@ fun ParametersSection(
 
             // 2. Hunting coefficient 'a'
             ParameterSliderItem(
-                label = "نرخ شکار کوسه‌ها (a):",
-                subText = "سهولت صید ماهی توسط کوسه (برخوردها)",
+                label = "نرخ صید ماهی‌ها توسط کوسه (a):",
+                subText = "شدت برخورد و افت جمعیت صید ناشی از شکار",
                 value = a,
                 range = 0.01f..0.12f,
                 color = OceanSecondary,
@@ -1375,8 +1459,8 @@ fun ParametersSection(
 
             // 3. Predator death rate 's'
             ParameterSliderItem(
-                label = "نرخ مرگ طبیعی صیاد (s):",
-                subText = "مرگ یا گرسنگی کوسه‌ها در نبود صید",
+                label = "نرخ مرگ طبیعی کوسه‌ها (s) - صیاد:",
+                subText = "سرعت مرگ و گرسنگی صیاد به دلیل کمبود شکار",
                 value = s,
                 range = 0.1f..1.5f,
                 color = Color(0xFFFF5252),
@@ -1386,8 +1470,8 @@ fun ParametersSection(
 
             // 4. Predator reproduction conversion 'b'
             ParameterSliderItem(
-                label = "بازدهی جذب انرژی صیاد (b):",
-                subText = "سرعت باروری صیاد از شکار (رشد کوسه)",
+                label = "بازدهی تولید مثل صیاد پس از تغذیه (b):",
+                subText = "ضریب تبدیل شکارهای صید به متولدین جدید کوسه",
                 value = b,
                 range = 0.005f..0.05f,
                 color = BrandPrimary,
@@ -1596,12 +1680,20 @@ fun StatisticsSection(
                     verticalArrangement = Arrangement.spacedBy(4.dp)
                 ) {
                     Text("کوسه (صیاد 🦈)", fontSize = 11.sp, color = OceanSecondary, fontWeight = FontWeight.Bold)
-                    Text(
-                        text = if (isEcosystem) "${sharkCount.roundToInt()}" else String.format("%.1f", sharkCount),
-                        fontSize = 18.sp,
-                        fontWeight = FontWeight.Bold,
-                        color = OceanOnSurface
-                    )
+                    AnimatedContent(
+                        targetState = if (isEcosystem) "${sharkCount.roundToInt()}" else String.format("%.1f", sharkCount),
+                        transitionSpec = {
+                            fadeIn(animationSpec = tween(150)) togetherWith fadeOut(animationSpec = tween(150))
+                        },
+                        label = "shark_count_anim"
+                    ) { countStr ->
+                        Text(
+                            text = countStr,
+                            fontSize = 18.sp,
+                            fontWeight = FontWeight.Bold,
+                            color = OceanOnSurface
+                        )
+                    }
                     Spacer(modifier = Modifier.height(2.dp))
                     Text("تولد کلی: $sharkBirth", fontSize = 9.sp, color = OceanOnSurface.copy(alpha = 0.6f))
                     Text("مرگ کلی: $sharkDeath", fontSize = 9.sp, color = OceanOnSurface.copy(alpha = 0.6f))
@@ -1620,12 +1712,20 @@ fun StatisticsSection(
                     verticalArrangement = Arrangement.spacedBy(4.dp)
                 ) {
                     Text("ماهی (صید 🐟)", fontSize = 11.sp, color = OceanPrimary, fontWeight = FontWeight.Bold)
-                    Text(
-                        text = if (isEcosystem) "${fishCount.roundToInt()}" else String.format("%.1f", fishCount),
-                        fontSize = 18.sp,
-                        fontWeight = FontWeight.Bold,
-                        color = OceanOnSurface
-                    )
+                    AnimatedContent(
+                        targetState = if (isEcosystem) "${fishCount.roundToInt()}" else String.format("%.1f", fishCount),
+                        transitionSpec = {
+                            fadeIn(animationSpec = tween(150)) togetherWith fadeOut(animationSpec = tween(150))
+                        },
+                        label = "fish_count_anim"
+                    ) { countStr ->
+                        Text(
+                            text = countStr,
+                            fontSize = 18.sp,
+                            fontWeight = FontWeight.Bold,
+                            color = OceanOnSurface
+                        )
+                    }
                     Spacer(modifier = Modifier.height(2.dp))
                     Text("تولد کلی: $fishBirth", fontSize = 9.sp, color = OceanOnSurface.copy(alpha = 0.6f))
                     Text("خورده شده: $fishDeath", fontSize = 9.sp, color = OceanOnSurface.copy(alpha = 0.6f))
